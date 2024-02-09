@@ -1,5 +1,8 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, nativeImage, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell } = require('electron')
 const path = require('path')
+const fs = require('fs')
+const { constants } = require('buffer')
+
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true //临时屏蔽警告
 
 const createMainWindow = () => {
@@ -8,7 +11,7 @@ const createMainWindow = () => {
     width: 250,
     height: 80,
     x: 0,
-    y: 0,
+    y: 100,
     icon: path.resolve(__dirname, 'images/icon.ico'),
     frame: false,
     alwaysOnTop: true,
@@ -19,12 +22,14 @@ const createMainWindow = () => {
     },
   })
   win.loadFile(path.resolve(__dirname, 'index/index.html'), () => {})
+
   win.on('ready-to-show', () => {
     win.show()
     win.setSkipTaskbar(true)
     // win.center()
     // win.webContents.openDevTools()
   })
+  return win
 }
 
 const createSetWindow = () => {
@@ -52,17 +57,16 @@ const createSetWindow = () => {
 }
 
 app.whenReady().then(() => {
-  createMainWindow()
-
-  // handle 监听器
-  ipcMain.handle('dialog:openFile', async (event, title) => {
-    const webContents = event.sender //发送方的 BrowserWindow 实例（窗口实例）
-    const win = BrowserWindow.fromWebContents(webContents) // BrowserWindow 实例（窗口实例）的上下文
-    win.setTitle(title) // 修改窗口标题
-    const { canceled, filePaths } = await dialog.showOpenDialog() //获取选择的文件路径
-    if (!canceled) {
-      return filePaths[0]
-    }
+  const mainWindow = createMainWindow()
+  ipcMain.on('set-color', async (event, value) => {
+    // 修改颜色
+    let config
+    fs.readFile(path.resolve(__dirname, 'config.json'), 'utf8', (err, data) => {
+      config = JSON.parse(data)
+      config.color = value
+      fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), (err) => {})
+      mainWindow.webContents.send('hand-config', config)
+    })
   })
 
   const tray = new Tray(nativeImage.createFromPath(path.resolve(__dirname, 'images/icon.png')))
