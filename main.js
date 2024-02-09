@@ -2,38 +2,57 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, Tray, nativeImage, shell } = 
 const path = require('path')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true //临时屏蔽警告
 
-const createWindow = () => {
-  const mainWindow = new BrowserWindow({
-    show: false, // 隐藏窗口
-    width: 500,
-    height: 1000,
-    // width: 250,
-    // height: 80,
+const createMainWindow = () => {
+  const win = new BrowserWindow({
+    show: false,
+    width: 250,
+    height: 80,
     x: 0,
     y: 0,
     icon: path.resolve(__dirname, 'images/icon.ico'),
-    // frame: false, // 菜单栏
-    // alwaysOnTop: true, // 置顶
-    // transparent: true, // 透明
-    // resizable: false, // 更改窗口大小
+    frame: false,
+    alwaysOnTop: true,
+    transparent: true,
+    resizable: false,
+    webPreferences: {
+      preload: path.resolve(__dirname, 'preload.js'),
+    },
+  })
+  win.loadFile(path.resolve(__dirname, 'index/index.html'), () => {})
+  win.on('ready-to-show', () => {
+    win.show()
+    win.setSkipTaskbar(true)
+    // win.center()
+    // win.webContents.openDevTools()
+  })
+}
+
+const createSetWindow = () => {
+  const win = new BrowserWindow({
+    show: false,
+    width: 800,
+    height: 600,
+    x: 0,
+    y: 0,
+    title: 'ElecClock 设置',
+    icon: path.resolve(__dirname, 'images/icon.ico'),
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.resolve(__dirname, 'preload.js'),
     },
   })
 
-  mainWindow.loadFile(path.resolve(__dirname, 'index/index.html'), () => {})
+  win.loadFile(path.resolve(__dirname, 'set/set.html'), () => {})
 
-  mainWindow.on('ready-to-show', () => {
-    // 优化启动白屏 初始化后再显示
-    mainWindow.show() //显示窗口
-    mainWindow.setSkipTaskbar(true) //隐藏任务窗口
-    // mainWindow.center() //居中
-    mainWindow.webContents.openDevTools() //打开调试
+  win.on('ready-to-show', () => {
+    win.show()
+    // win.center()
+    win.webContents.openDevTools()
   })
 }
 
 app.whenReady().then(() => {
-  createWindow() //创建窗口
+  createMainWindow()
 
   // handle 监听器
   ipcMain.handle('dialog:openFile', async (event, title) => {
@@ -46,33 +65,36 @@ app.whenReady().then(() => {
     }
   })
 
-  let tray = null
-  const icon = nativeImage.createFromPath(path.resolve(__dirname, 'images/icon.png'))
-  tray = new Tray(icon)
-  tray.setToolTip('This is my application')
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      role: 'Item2',
-      label: '设置',
-      click: async () => {
-        await shell.openExternal('https://gitee.com/zhanghed/elec-tron')
+  const tray = new Tray(nativeImage.createFromPath(path.resolve(__dirname, 'images/icon.png')))
+  tray.setToolTip('ElecClock v1.0.0.0')
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      {
+        label: '关于  ',
+        click: async () => {
+          await shell.openExternal('https://gitee.com/zhanghed/ElecClock')
+        },
       },
-    },
-    {
-      role: 'Item1',
-      label: '关于',
-      click: async () => {
-        await shell.openExternal('https://gitee.com/zhanghed/elec-tron')
+      {
+        label: '设置  ',
+        click: () => {
+          createSetWindow()
+        },
       },
-    },
-  ])
-  tray.setContextMenu(contextMenu)
+      {
+        label: '退出  ',
+        click: () => {
+          app.quit()
+        },
+      },
+    ]),
+  )
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow() // 苹果系统 唤醒应用 创建窗口
+    if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit() // 非苹果系统 可以退出
+  if (process.platform !== 'darwin') app.quit()
 })
