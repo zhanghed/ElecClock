@@ -1,82 +1,111 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, screen } = require('electron')
 const path = require('path')
 const fs = require('fs')
-const { constants } = require('buffer')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true //临时屏蔽警告
 
+let packageC, configC, workWidth
+
+const appInit = () => {
+  // 初始化 获取两个配置文件
+  return new Promise((resolve, reject) => {
+    // let packageC, configC, workWidth
+    fs.readFile(path.resolve(__dirname, 'package.json'), 'utf8', (err, data) => {
+      if (err) reject(err)
+      packageC = JSON.parse(data)
+      fs.readFile(path.resolve(__dirname, 'config.json'), 'utf8', (err1, data1) => {
+        if (err1) reject(err1)
+        configC = JSON.parse(data1)
+        workWidth = screen.getPrimaryDisplay().workAreaSize.width
+        // resolve([packageC, configC, workWidth])
+        resolve()
+      })
+    })
+  })
+}
+
 const createMainWindow = () => {
+  // 创建主窗体 时钟
   const win = new BrowserWindow({
     show: false,
-    width: 250,
-    height: 80,
-    x: 0,
-    y: 100,
+    width: workWidth * (configC.size / 10),
+    height: (workWidth * (configC.size / 10)) / 3,
+    x: configC.position[0],
+    y: configC.position[1],
     icon: path.resolve(__dirname, 'images/icon.ico'),
     frame: false,
     alwaysOnTop: true,
     transparent: true,
     resizable: false,
+    skipTaskbar: true,
     webPreferences: {
       preload: path.resolve(__dirname, 'preload.js'),
     },
   })
   win.loadFile(path.resolve(__dirname, 'index/index.html'), () => {})
-
   win.on('ready-to-show', () => {
     win.show()
-    win.setSkipTaskbar(true)
-    // win.center()
-    // win.webContents.openDevTools()
+    win.webContents.send('hand-config', configC)
   })
+  win.on('moved', () => {
+    // 监听窗体移动位置
+    configC.position = win.getPosition()
+    win.setPosition(...configC.position)
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+  })
+  ipcMain.on('set-size', async (event, value) => {
+    // 监听设置窗体大小
+    configC.size = value
+    win.setMinimumSize(0, 0)
+    win.setSize(workWidth * (configC.size / 10), (workWidth * (configC.size / 10)) / 3)
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+  })
+  ipcMain.on('set-color', async (event, value) => {
+    // 监听设置字体颜色
+    configC.color = value
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    win.webContents.send('hand-config', configC)
+  })
+
   return win
 }
 
 const createSetWindow = () => {
+  // 创建设置窗体
   const win = new BrowserWindow({
     show: false,
     width: 800,
     height: 600,
     x: 0,
     y: 0,
-    title: 'ElecClock 设置',
+    title: '设置',
+    alwaysOnTop: true,
     icon: path.resolve(__dirname, 'images/icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.resolve(__dirname, 'preload.js'),
     },
   })
-
   win.loadFile(path.resolve(__dirname, 'set/set.html'), () => {})
-
   win.on('ready-to-show', () => {
     win.show()
-    // win.center()
+    win.center()
+    win.webContents.send('hand-config', configC)
     win.webContents.openDevTools()
   })
+  return win
 }
 
-app.whenReady().then(() => {
-  const mainWindow = createMainWindow()
-  ipcMain.on('set-color', async (event, value) => {
-    // 修改颜色
-    let config
-    fs.readFile(path.resolve(__dirname, 'config.json'), 'utf8', (err, data) => {
-      config = JSON.parse(data)
-      config.color = value
-      fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(config), (err) => {})
-      mainWindow.webContents.send('hand-config', config)
-    })
-  })
-
+const createMenu = () => {
+  // 创建托盘菜单
   const tray = new Tray(nativeImage.createFromPath(path.resolve(__dirname, 'images/icon.png')))
-  tray.setToolTip('ElecClock v1.0.0.0')
+  tray.setToolTip(`${packageC.name} ${packageC.version}`)
   tray.setContextMenu(
     Menu.buildFromTemplate([
       {
         label: '关于  ',
         click: async () => {
-          await shell.openExternal('https://gitee.com/zhanghed/ElecClock')
+          await shell.openExternal(packageC.description)
         },
       },
       {
@@ -93,12 +122,17 @@ app.whenReady().then(() => {
       },
     ]),
   )
+}
+
+app.whenReady().then(async () => {
+  await appInit()
+  createMainWindow()
+  createMenu()
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
 })
-
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })

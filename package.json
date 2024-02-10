@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "author": "zhanghed",
-  "description": "时钟",
+  "description": "https://gitee.com/zhanghed/ElecClock",
   "main": "main.js",
   "scripts": {
     "dev": "nodemon --exec electron .",
