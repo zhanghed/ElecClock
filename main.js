@@ -28,8 +28,8 @@ const createMainWindow = () => {
   // 创建主窗体 时钟
   const win = new BrowserWindow({
     show: false,
-    width: workWidth * (configC.size / 10),
-    height: (workWidth * (configC.size / 10)) / 3,
+    width: parseInt(workWidth * (configC.size / 10)),
+    height: parseInt((workWidth * (configC.size / 10)) / 3),
     x: configC.position[0],
     y: configC.position[1],
     icon: path.resolve(__dirname, 'images/icon.ico'),
@@ -43,10 +43,6 @@ const createMainWindow = () => {
     },
   })
   win.loadFile(path.resolve(__dirname, 'index/index.html'), () => {})
-  win.on('ready-to-show', () => {
-    win.show()
-    win.webContents.send('hand-config', configC)
-  })
   win.on('moved', () => {
     // 监听窗体移动位置
     configC.position = win.getPosition()
@@ -57,7 +53,7 @@ const createMainWindow = () => {
     // 监听设置窗体大小
     configC.size = value
     win.setMinimumSize(0, 0)
-    win.setSize(workWidth * (configC.size / 10), (workWidth * (configC.size / 10)) / 3)
+    win.setSize(parseInt(workWidth * (configC.size / 10)), parseInt((workWidth * (configC.size / 10)) / 3))
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
   })
   ipcMain.on('set-color', async (event, value) => {
@@ -66,8 +62,10 @@ const createMainWindow = () => {
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
     win.webContents.send('hand-config', configC)
   })
-
-  return win
+  win.on('ready-to-show', () => {
+    win.show()
+    win.webContents.send('hand-config', configC)
+  })
 }
 
 const createSetWindow = () => {
