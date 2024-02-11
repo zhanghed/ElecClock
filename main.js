@@ -127,6 +127,14 @@ app.whenReady().then(async () => {
   createMainWindow()
   createMenu()
 
+  ipcMain.on('set-openAtLogin', async (event, value) => {
+    // 监听设置开机启动
+    configC.openAtLogin = value
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    app.setLoginItemSettings({
+      openAtLogin: configC.openAtLogin,
+    })
+  })
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })

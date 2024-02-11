@@ -1,1 +1,9 @@
-{"color":"#ee20b7","size":"2","position":[1641,963]}
+{
+    "color": "#ee5420",
+    "size": "3",
+    "position": [
+        1401,
+        96
+    ],
+    "openAtLogin": false
+}
