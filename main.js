@@ -175,7 +175,6 @@ app.whenReady().then(async () => {
   createMainWindow()
   createMenu()
   let remindObj = remind()
-
   ipcMain.on('set-remind', async (event, value) => {
     // 监听设置间隔时间
     configC.remind = Number(value) > 0 ? Number(value) : ''
@@ -184,7 +183,6 @@ app.whenReady().then(async () => {
     if (remindObj.win) remindObj.win.close()
     remindObj = remind()
   })
-
   ipcMain.on('set-openAtLogin', async (event, value) => {
     // 监听设置开机启动
     configC.openAtLogin = value
@@ -193,7 +191,13 @@ app.whenReady().then(async () => {
       openAtLogin: configC.openAtLogin,
     })
   })
-
+  ipcMain.on('set-reset', async (event, value) => {
+    // 监听设置默认设置
+    configC = value
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    app.relaunch()
+    app.exit()
+  })
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })

@@ -20,3 +20,8 @@ document.querySelector('.remind').addEventListener('change', (event) => {
 document.querySelector('.format').addEventListener('change', (event) => {
   window.electronAPI.setFormat(event.target.checked)
 })
+
+document.querySelector('.reset').addEventListener('click', (event) => {
+  const reset = { color: '#d81e06', size: 4, format: true, position: [50, 50], openAtLogin: true, remind: '' }
+  window.electronAPI.setReset(reset)
+})
