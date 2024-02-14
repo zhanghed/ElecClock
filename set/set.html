@@ -8,18 +8,25 @@
   </head>
   <body>
     <div>
-      <div>
-        <span>时钟颜色：</span>
-        <input type="color" class="color" />
-      </div>
-      <div>
-        <span>时钟大小：</span>
-        <input type="range" min="1" max="10" class="size" />
-      </div>
-      <div>
-        <span>开机启动：</span>
-        <input type="checkbox" checked class="openAtLogin" />
-      </div>
+      <span>时钟颜色：</span>
+      <input type="color" class="color" />
+    </div>
+    <div>
+      <span>时钟大小：</span>
+      <input type="range" min="1" max="20" class="size" />
+    </div>
+    <div>
+      <span>间隔提醒：</span>
+      <input
+        type="text"
+        class="remind"
+        maxlength="3"
+        minlength="1"
+        onkeyup="value=value.replace(/[^\d]/g,'').replace(/^0{1,}/g,'')" />
+    </div>
+    <div>
+      <span>开机启动：</span>
+      <input type="checkbox" checked class="openAtLogin" />
     </div>
 
     <script src="set.js"></script>

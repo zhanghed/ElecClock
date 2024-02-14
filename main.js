@@ -4,34 +4,38 @@ const fs = require('fs')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true //临时屏蔽警告
 
-let packageC, configC, workWidth
+let packageC, configC, wWidth
 
 const appInit = () => {
   // 初始化 获取两个配置文件
   return new Promise((resolve, reject) => {
-    // let packageC, configC, workWidth
     fs.readFile(path.resolve(__dirname, 'package.json'), 'utf8', (err, data) => {
       if (err) reject(err)
       packageC = JSON.parse(data)
       fs.readFile(path.resolve(__dirname, 'config.json'), 'utf8', (err1, data1) => {
         if (err1) reject(err1)
         configC = JSON.parse(data1)
-        workWidth = screen.getPrimaryDisplay().workAreaSize.width
-        // resolve([packageC, configC, workWidth])
+        wWidth = screen.getPrimaryDisplay().workAreaSize.width
         resolve()
       })
     })
   })
 }
 
+const workSize = () => {
+  // 计算尺寸
+  if (configC.format == 2) {
+    return [parseInt(((wWidth * configC.size) / 2 / 10) * 0.6), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
+  }
+  if (configC.format == 3) {
+    return [parseInt((wWidth * configC.size) / 2 / 10), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
+  }
+}
+
 const createMainWindow = () => {
   // 创建主窗体 时钟
   const win = new BrowserWindow({
     show: false,
-    width: parseInt(workWidth * (configC.size / 10)),
-    height: parseInt((workWidth * (configC.size / 10)) / 3),
-    x: configC.position[0],
-    y: configC.position[1],
     icon: path.resolve(__dirname, 'images/icon.ico'),
     frame: false,
     alwaysOnTop: true,
@@ -53,7 +57,7 @@ const createMainWindow = () => {
     // 监听设置窗体大小
     configC.size = value
     win.setMinimumSize(0, 0)
-    win.setSize(parseInt(workWidth * (configC.size / 10)), parseInt((workWidth * (configC.size / 10)) / 3))
+    win.setSize(...workSize())
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
   })
   ipcMain.on('set-color', async (event, value) => {
@@ -64,6 +68,8 @@ const createMainWindow = () => {
   })
   win.on('ready-to-show', () => {
     win.show()
+    win.setSize(...workSize())
+    win.setPosition(...configC.position)
     win.webContents.send('hand-config', configC)
   })
 }
@@ -72,10 +78,8 @@ const createSetWindow = () => {
   // 创建设置窗体
   const win = new BrowserWindow({
     show: false,
-    width: 800,
-    height: 600,
-    x: 0,
-    y: 0,
+    width: 600,
+    height: 400,
     title: '设置',
     alwaysOnTop: true,
     icon: path.resolve(__dirname, 'images/icon.ico'),
@@ -89,7 +93,27 @@ const createSetWindow = () => {
     win.show()
     win.center()
     win.webContents.send('hand-config', configC)
-    win.webContents.openDevTools()
+  })
+}
+
+const createRemindWindow = () => {
+  // 创建提醒窗体
+  const win = new BrowserWindow({
+    show: false,
+    width: 300,
+    height: 150,
+    title: '提醒',
+    alwaysOnTop: true,
+    autoHideMenuBar: true,
+    icon: path.resolve(__dirname, 'images/icon.ico'),
+    webPreferences: {
+      preload: path.resolve(__dirname, 'preload.js'),
+    },
+  })
+  win.loadFile(path.resolve(__dirname, 'remind/remind.html'), () => {})
+  win.on('ready-to-show', () => {
+    win.show()
+    win.center()
   })
   return win
 }
@@ -122,10 +146,38 @@ const createMenu = () => {
   )
 }
 
+const remind = () => {
+  // 定时提醒
+  if (!configC.remind) return null
+  let remindObj = {
+    win: null,
+    timer: null,
+  }
+  remindObj.timer = setInterval(() => {
+    if (remindObj.win) remindObj.win.close()
+    remindObj.win = createRemindWindow()
+    remindObj.win.on('close', () => {
+      remindObj.win = null
+    })
+  }, configC.remind * 1000 * 60)
+  return remindObj
+}
+
 app.whenReady().then(async () => {
+  // win.webContents.openDevTools()
   await appInit()
   createMainWindow()
   createMenu()
+  let remindObj = remind()
+
+  ipcMain.on('set-remind', async (event, value) => {
+    // 监听设置间隔时间
+    configC.remind = Number(value) > 0 ? Number(value) : ''
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    if (remindObj.timer) clearInterval(remindObj.timer)
+    if (remindObj.win) remindObj.win.close()
+    remindObj = remind()
+  })
 
   ipcMain.on('set-openAtLogin', async (event, value) => {
     // 监听设置开机启动
@@ -135,10 +187,12 @@ app.whenReady().then(async () => {
       openAtLogin: configC.openAtLogin,
     })
   })
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
   })
 })
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })

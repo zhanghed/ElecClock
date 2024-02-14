@@ -4,16 +4,8 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-}
-body > div {
-  margin: 5px;
-  padding: 5px;
-  width: 80%;
-}
-.remind {
-  width: 50px;
 }
