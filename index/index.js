@@ -1,24 +1,28 @@
-let format = 2
-setInterval(() => {
+let format = true
+
+const showDate = () => {
   const date = new Date()
   let h = String(date.getHours()).padStart(2, '0')
   let m = String(date.getMinutes()).padStart(2, '0')
   let s = String(date.getSeconds()).padStart(2, '0')
-  if (format == 2) {
+  if (format) {
+    document.querySelector('body').innerHTML = `${h}:${m}:${s}`
+  } else {
     document.querySelector('body').innerHTML = `${h}:${m}`
   }
-  if (format == 3) {
-    document.querySelector('body').innerHTML = `${h}:${m}:${s}`
-  }
-}, 1000)
+}
 
 window.electronAPI.handConfig((event, value) => {
   format = value.format
   document.querySelector('body').style.color = value.color
-  if (format == 2) {
+  if (format) {
+    document.querySelector('body').style.fontSize = '23vw'
+  } else {
     document.querySelector('body').style.fontSize = '36vw'
   }
-  if (format == 3) {
-    document.querySelector('body').style.fontSize = '23vw'
-  }
+  showDate()
 })
+
+setInterval(() => {
+  showDate()
+}, 1000)

@@ -22,13 +22,13 @@ const appInit = () => {
   })
 }
 
-const workSize = () => {
+const workSize = (win) => {
   // 计算尺寸
-  if (configC.format == 2) {
-    return [parseInt(((wWidth * configC.size) / 2 / 10) * 0.6), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
-  }
-  if (configC.format == 3) {
+  win.setMinimumSize(0, 0)
+  if (configC.format) {
     return [parseInt((wWidth * configC.size) / 2 / 10), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
+  } else {
+    return [parseInt(((wWidth * configC.size) / 2 / 10) * 0.6), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
   }
 }
 
@@ -56,8 +56,7 @@ const createMainWindow = () => {
   ipcMain.on('set-size', async (event, value) => {
     // 监听设置窗体大小
     configC.size = value
-    win.setMinimumSize(0, 0)
-    win.setSize(...workSize())
+    win.setSize(...workSize(win))
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
   })
   ipcMain.on('set-color', async (event, value) => {
@@ -66,9 +65,16 @@ const createMainWindow = () => {
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
     win.webContents.send('hand-config', configC)
   })
+  ipcMain.on('set-format', async (event, value) => {
+    // 监听设置显示秒位
+    configC.format = value
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    win.setSize(...workSize(win))
+    win.webContents.send('hand-config', configC)
+  })
   win.on('ready-to-show', () => {
     win.show()
-    win.setSize(...workSize())
+    win.setSize(...workSize(win))
     win.setPosition(...configC.position)
     win.webContents.send('hand-config', configC)
   })

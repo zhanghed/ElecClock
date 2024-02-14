@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setSize: (value) => ipcRenderer.send('set-size', value),
   setOpenAtLogin: (value) => ipcRenderer.send('set-openAtLogin', value),
   setRemind: (value) => ipcRenderer.send('set-remind', value),
+  setFormat: (value) => ipcRenderer.send('set-format', value),
   // 主进程向渲染进程
   handConfig: (callback) => ipcRenderer.on('hand-config', callback),
 })
