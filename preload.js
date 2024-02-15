@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setRemind: (value) => ipcRenderer.send('set-remind', value),
   setFormat: (value) => ipcRenderer.send('set-format', value),
   setReset: (value) => ipcRenderer.send('set-reset', value),
+  setSelect: (value) => ipcRenderer.send('set-select', value),
   // 主进程向渲染进程
   handConfig: (callback) => ipcRenderer.on('hand-config', callback),
 })

@@ -8,6 +8,16 @@
   </head>
   <body>
     <div>
+      <span>时钟字体：</span>
+      <select class="select">
+        <option value="KaiTi">KaiTi</option>
+        <option value="mplus">mplus</option>
+        <option value="Bowman">Bowman</option>
+        <option value="CQ">CQ</option>
+        <option value="absender">absender</option>
+      </select>
+    </div>
+    <div>
       <span>时钟颜色：</span>
       <input type="color" class="color" />
     </div>
@@ -27,13 +37,14 @@
         maxlength="3"
         minlength="1"
         onkeyup="value=value.replace(/[^\d]/g,'').replace(/^0{1,}/g,'')" />
+      <span>(分钟)</span>
     </div>
     <div>
       <span>开机启动：</span>
       <input type="checkbox" checked class="openAtLogin" />
     </div>
     <div>
-      <button class="reset">默认设置</button>
+      <button class="reset">恢复默认设置</button>
     </div>
 
     <script src="set.js"></script>

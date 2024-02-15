@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'KaiTi';
+  src: url('./KaiTi-1.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'mplus';
+  src: url('./mplus-1m-bold-1.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Bowman';
+  src: url('./Bowman-1.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'CQ';
+  src: url('./CQ-Mono-1.otf') format('opentype');
+}
+@font-face {
+  font-family: 'absender';
+  src: url('./absender1-1.ttf') format('truetype');
+}

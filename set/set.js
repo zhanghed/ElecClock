@@ -4,6 +4,7 @@ window.electronAPI.handConfig((event, value) => {
   document.querySelector('.openAtLogin').checked = value.openAtLogin
   document.querySelector('.remind').value = value.remind
   document.querySelector('.format').checked = value.format
+  document.querySelector('.select').value = value.select
 })
 document.querySelector('.color').addEventListener('change', (event) => {
   window.electronAPI.setColor(event.target.value)
@@ -14,14 +15,25 @@ document.querySelector('.size').addEventListener('change', (event) => {
 document.querySelector('.openAtLogin').addEventListener('change', (event) => {
   window.electronAPI.setOpenAtLogin(event.target.checked)
 })
-document.querySelector('.remind').addEventListener('change', (event) => {
+document.querySelector('.remind').addEventListener('input', (event) => {
   window.electronAPI.setRemind(event.target.value)
 })
 document.querySelector('.format').addEventListener('change', (event) => {
   window.electronAPI.setFormat(event.target.checked)
 })
+document.querySelector('.select').addEventListener('change', (event) => {
+  window.electronAPI.setSelect(event.target.value)
+})
 
 document.querySelector('.reset').addEventListener('click', (event) => {
-  const reset = { color: '#d81e06', size: 4, format: true, position: [50, 50], openAtLogin: true, remind: '' }
+  const reset = {
+    color: '#d81e06',
+    size: 4,
+    format: false,
+    select: 'KaiTi',
+    position: [50, 50],
+    openAtLogin: true,
+    remind: '',
+  }
   window.electronAPI.setReset(reset)
 })

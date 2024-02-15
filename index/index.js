@@ -15,6 +15,7 @@ const showDate = () => {
 window.electronAPI.handConfig((event, value) => {
   format = value.format
   document.querySelector('body').style.color = value.color
+  document.querySelector('body').style.fontFamily = value.select
   if (format) {
     document.querySelector('body').style.fontSize = '23vw'
   } else {

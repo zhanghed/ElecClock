@@ -22,18 +22,17 @@ const appInit = () => {
   })
 }
 
-const workSize = (win) => {
-  // 计算尺寸
-  win.setMinimumSize(0, 0)
-  if (configC.format) {
-    return [parseInt((wWidth * configC.size) / 2 / 10), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
-  } else {
-    return [parseInt(((wWidth * configC.size) / 2 / 10) * 0.6), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
-  }
-}
-
 const createMainWindow = () => {
   // 创建主窗体 时钟
+  const workSize = () => {
+    // 计算尺寸
+    win.setMinimumSize(0, 0)
+    if (configC.format) {
+      return [parseInt((wWidth * configC.size) / 2 / 10), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
+    } else {
+      return [parseInt(((wWidth * configC.size) / 2 / 10) * 0.6), parseInt((wWidth * configC.size) / 2 / 10 / 5)]
+    }
+  }
   const win = new BrowserWindow({
     show: false,
     icon: path.resolve(__dirname, 'images/icon.ico'),
@@ -53,10 +52,18 @@ const createMainWindow = () => {
     win.setPosition(...configC.position)
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
   })
+  ipcMain.on('set-reset', async (event, value) => {
+    // 监听设置默认设置
+    configC = value
+    win.setPosition(...configC.position)
+    win.setSize(...workSize())
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    win.webContents.send('hand-config', configC)
+  })
   ipcMain.on('set-size', async (event, value) => {
     // 监听设置窗体大小
     configC.size = value
-    win.setSize(...workSize(win))
+    win.setSize(...workSize())
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
   })
   ipcMain.on('set-color', async (event, value) => {
@@ -69,12 +76,18 @@ const createMainWindow = () => {
     // 监听设置显示秒位
     configC.format = value
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
-    win.setSize(...workSize(win))
+    win.setSize(...workSize())
+    win.webContents.send('hand-config', configC)
+  })
+  ipcMain.on('set-select', async (event, value) => {
+    // 监听设置修改字体
+    configC.select = value
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
     win.webContents.send('hand-config', configC)
   })
   win.on('ready-to-show', () => {
     win.show()
-    win.setSize(...workSize(win))
+    win.setSize(...workSize())
     win.setPosition(...configC.position)
     win.webContents.send('hand-config', configC)
   })
@@ -84,7 +97,7 @@ const createSetWindow = () => {
   // 创建设置窗体
   const win = new BrowserWindow({
     show: false,
-    width: 600,
+    width: 500,
     height: 400,
     title: '设置',
     alwaysOnTop: true,
@@ -95,10 +108,15 @@ const createSetWindow = () => {
     },
   })
   win.loadFile(path.resolve(__dirname, 'set/set.html'), () => {})
+  ipcMain.on('set-reset', async (event, value) => {
+    // 监听设置默认设置
+    win.webContents.send('hand-config', configC)
+  })
   win.on('ready-to-show', () => {
     win.show()
     win.center()
     win.webContents.send('hand-config', configC)
+    // win.webContents.openDevTools()
   })
 }
 
@@ -170,7 +188,6 @@ const remind = () => {
 }
 
 app.whenReady().then(async () => {
-  // win.webContents.openDevTools()
   await appInit()
   createMainWindow()
   createMenu()
@@ -190,13 +207,6 @@ app.whenReady().then(async () => {
     app.setLoginItemSettings({
       openAtLogin: configC.openAtLogin,
     })
-  })
-  ipcMain.on('set-reset', async (event, value) => {
-    // 监听设置默认设置
-    configC = value
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
-    app.relaunch()
-    app.exit()
   })
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()
