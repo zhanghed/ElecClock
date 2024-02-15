@@ -45,44 +45,44 @@ const createMainWindow = () => {
       preload: path.resolve(__dirname, 'preload.js'),
     },
   })
-  win.loadFile(path.resolve(__dirname, 'index/index.html'), () => {})
+  win.loadFile(path.resolve(__dirname, 'index/index.html'), () => { })
   win.on('moved', () => {
     // 监听窗体移动位置
     configC.position = win.getPosition()
     win.setPosition(...configC.position)
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
   })
   ipcMain.on('set-reset', async (event, value) => {
     // 监听设置默认设置
     configC = value
     win.setPosition(...configC.position)
     win.setSize(...workSize())
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
     win.webContents.send('hand-config', configC)
   })
   ipcMain.on('set-size', async (event, value) => {
     // 监听设置窗体大小
     configC.size = value
     win.setSize(...workSize())
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
   })
   ipcMain.on('set-color', async (event, value) => {
     // 监听设置字体颜色
     configC.color = value
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
     win.webContents.send('hand-config', configC)
   })
   ipcMain.on('set-format', async (event, value) => {
     // 监听设置显示秒位
     configC.format = value
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
     win.setSize(...workSize())
     win.webContents.send('hand-config', configC)
   })
   ipcMain.on('set-select', async (event, value) => {
     // 监听设置修改字体
     configC.select = value
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
     win.webContents.send('hand-config', configC)
   })
   win.on('ready-to-show', () => {
@@ -107,7 +107,7 @@ const createSetWindow = () => {
       preload: path.resolve(__dirname, 'preload.js'),
     },
   })
-  win.loadFile(path.resolve(__dirname, 'set/set.html'), () => {})
+  win.loadFile(path.resolve(__dirname, 'set/set.html'), () => { })
   win.on('close', (e) => {
     // 关闭确认提示
     dialog.showMessageBoxSync(win, {
@@ -138,7 +138,7 @@ const createRemindWindow = () => {
       preload: path.resolve(__dirname, 'preload.js'),
     },
   })
-  win.loadFile(path.resolve(__dirname, 'remind/remind.html'), () => {})
+  win.loadFile(path.resolve(__dirname, 'remind/remind.html'), () => { })
   win.on('ready-to-show', () => {
     win.show()
     win.center()
@@ -199,7 +199,7 @@ app.whenReady().then(async () => {
   ipcMain.on('set-remind', async (event, value) => {
     // 监听设置间隔时间
     configC.remind = Number(value) > 0 ? Number(value) : ''
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
     if (remindObj && remindObj.timer) clearInterval(remindObj.timer)
     if (remindObj && remindObj.win) remindObj.win.close()
     remindObj = remind()
@@ -207,7 +207,7 @@ app.whenReady().then(async () => {
   ipcMain.on('set-openAtLogin', async (event, value) => {
     // 监听设置开机启动
     configC.openAtLogin = value
-    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
+    fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => { })
     app.setLoginItemSettings({
       openAtLogin: configC.openAtLogin,
     })
