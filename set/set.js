@@ -15,7 +15,7 @@ document.querySelector('.size').addEventListener('change', (event) => {
 document.querySelector('.openAtLogin').addEventListener('change', (event) => {
   window.electronAPI.setOpenAtLogin(event.target.checked)
 })
-document.querySelector('.remind').addEventListener('input', (event) => {
+document.querySelector('.remind').addEventListener('change', (event) => {
   window.electronAPI.setRemind(event.target.value)
 })
 document.querySelector('.format').addEventListener('change', (event) => {

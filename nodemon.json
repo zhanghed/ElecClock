@@ -4,5 +4,5 @@
   "verbose": true,
   "restartable": "rs",
   "watch": ["*.*"],
-  "ext": "html,js,css,json"
+  "ext": "html,js,css"
 }

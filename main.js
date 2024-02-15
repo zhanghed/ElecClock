@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, screen } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, screen, dialog } = require('electron')
 const path = require('path')
 const fs = require('fs')
 
@@ -111,6 +111,14 @@ const createSetWindow = () => {
   ipcMain.on('set-reset', async (event, value) => {
     // 监听设置默认设置
     win.webContents.send('hand-config', configC)
+  })
+  win.on('close', (e) => {
+    // 关闭确认提示
+    dialog.showMessageBoxSync(win, {
+      type: 'info',
+      title: '提示',
+      message: '设置已生效',
+    })
   })
   win.on('ready-to-show', () => {
     win.show()
