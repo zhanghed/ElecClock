@@ -35,5 +35,11 @@ document.querySelector('.reset').addEventListener('click', (event) => {
     openAtLogin: true,
     remind: '',
   }
+  document.querySelector('.color').value = reset.color
+  document.querySelector('.size').value = reset.size
+  document.querySelector('.openAtLogin').checked = reset.openAtLogin
+  document.querySelector('.remind').value = reset.remind
+  document.querySelector('.format').checked = reset.format
+  document.querySelector('.select').value = reset.select
   window.electronAPI.setReset(reset)
 })

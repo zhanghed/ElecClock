@@ -108,10 +108,6 @@ const createSetWindow = () => {
     },
   })
   win.loadFile(path.resolve(__dirname, 'set/set.html'), () => {})
-  ipcMain.on('set-reset', async (event, value) => {
-    // 监听设置默认设置
-    win.webContents.send('hand-config', configC)
-  })
   win.on('close', (e) => {
     // 关闭确认提示
     dialog.showMessageBoxSync(win, {
@@ -204,8 +200,8 @@ app.whenReady().then(async () => {
     // 监听设置间隔时间
     configC.remind = Number(value) > 0 ? Number(value) : ''
     fs.writeFile(path.resolve(__dirname, 'config.json'), JSON.stringify(configC), (err) => {})
-    if (remindObj.timer) clearInterval(remindObj.timer)
-    if (remindObj.win) remindObj.win.close()
+    if (remindObj && remindObj.timer) clearInterval(remindObj.timer)
+    if (remindObj && remindObj.win) remindObj.win.close()
     remindObj = remind()
   })
   ipcMain.on('set-openAtLogin', async (event, value) => {
